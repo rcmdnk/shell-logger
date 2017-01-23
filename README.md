@@ -28,13 +28,17 @@ In your script, source shell-logger:
 
 Then, you can use such `info` or `err` command in your script like:
 
-    somecommand
-    ret=$?
-    if [ ret = 0 ];then
-      info This is information
-    else
-      err Someting wrong!
-    fi
+```bash
+#!/bin/bash
+
+test_command
+ret=$?
+if [ ret = 0 ];then
+  info Command succeeded.
+else
+  err Command failed!
+fi
+```
 
 Each level has each functions:
 
