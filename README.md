@@ -7,6 +7,9 @@ Each output is formatted with date-time and colored by each color definition.
 
 These color codes are removed when the output is passed to a pipe or written into files.
 
+![shelllogger](https://github.com/rcmdnk/shell-logger/blob/images/shelllogger.jpg)
+
+
 # Installation
 
 On Mac, you can install **etc/shell-logger.sh** by Homebrew:
