@@ -52,13 +52,13 @@ fi
 # }}}
 
 # Functions {{{
-function _logger_version () {
+_logger_version () {
   printf "%s %s %s\n" "$_LOGGER_NAME" "$_LOGGER_VERSION" "$_LOGGER_DATE"
 }
-function _logger_time () {
+_logger_time () {
   printf "[$(date +"$_LOGGER_DATE_FORMAT")] %s"  "$*"
 }
-function _logger () {
+_logger () {
   local logger_level=$_LOGGER_LEVEL
   expr "$_LOGGER_LEVEL" + 1 >/dev/null 2>&1
   if [ $? -ge 2 ];then
