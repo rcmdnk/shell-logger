@@ -7,7 +7,7 @@
 # Homepage: https://github.com/rcmdnk/shell-logger
 #
 _LOGGER_NAME="shell-logger"
-_LOGGER_VERSION="v0.0.1"
+_LOGGER_VERSION="v0.0.2"
 _LOGGER_DATE="23/Jan/2017"
 # }}}
 
@@ -39,6 +39,7 @@ _LOGGER_DATE="23/Jan/2017"
 # Default variables {{{
 _LOGGER_DATE_FORMAT=${_LOGGER_DATE_FORMAT:-'%Y/%m/%d %H:%M:%S'}
 _LOGGER_LEVEL=${_LOGGER_LEVEL:-1} # 0: debug, 1: info, 2: notice, 3: warning, 4: error
+_LOGGER_STDERR_LEVEL=${_LOGGER_STDERR_LEVEL:-4}
 _LOGGER_DEBUG_COLOR=${_LOGGER_INFO_COLOR:-"3"}
 _LOGGER_INFO_COLOR=${_LOGGER_INFO_COLOR:-""}
 _LOGGER_NOTICE_COLOR=${_LOGGER_INFO_COLOR:-"36"}
@@ -73,17 +74,23 @@ function _logger () {
   fi
   local level=$1
   shift
-  if [ "$logger_level" -gt "$level" ];then
+  if [ "$level" -lt "$logger_level" ];then
     return
   fi
   [ -z "$ZSH_VERSION" ] || emulate -L ksh
   local msg
   msg=$(_logger_time "[${_LOGGER_LEVELS[$level]}]: $*")
   local log_colors=("$_LOGGER_DEBUG_COLOR" "$_LOGGER_INFO_COLOR" "$_LOGGER_NOTICE_COLOR" "$_LOGGER_WARNING_COLOR" "$_LOGGER_ERROR_COLOR")
-  if [ "$_LOGGER_ALWAYS_COLOR" != -1 ] && ([ -t 1 ] || [ "$_LOGGER_ALWAYS_COLOR" = 1 ]);then
-    printf "\e[${log_colors[$level]}m%s\e[m\n"  "$msg"
+  local _logger_printf=printf
+  local out=1
+  if [ "$level" -ge "$_LOGGER_STDERR_LEVEL" ];then
+    out=2
+    _logger_printf=">&2 printf"
+  fi
+  if [ "$_LOGGER_ALWAYS_COLOR" = 1 ] || ([ "$_LOGGER_ALWAYS_COLOR" != -1 ] && [ -t $out ]);then
+    eval "$_logger_printf \"\\e[${log_colors[$level]}m%s\\e[m\\n\"  \"$msg\""
   else
-    printf "%s\n" "$msg"
+    eval "$_logger_printf \"%s\\n\" \"$msg\""
   fi
 }
 debug () {
