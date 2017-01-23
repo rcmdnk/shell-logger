@@ -61,7 +61,7 @@ _logger_time () {
 _logger () {
   local logger_level=$_LOGGER_LEVEL
   expr "$_LOGGER_LEVEL" + 1 >/dev/null 2>&1
-  if [ $? -ge 2 ];then
+  if [ $? -eq 2 ];then
     logger_level=0
     local n=0
     for l in "${_LOGGER_LEVELS[@]}";do
