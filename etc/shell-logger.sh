@@ -56,7 +56,7 @@ _logger_version () {
   printf "%s %s %s\n" "$_LOGGER_NAME" "$_LOGGER_VERSION" "$_LOGGER_DATE"
 }
 _logger_time () {
-  printf "[$(date +"$_LOGGER_DATE_FORMAT")] %s"  "$*"
+  printf "[$(date +"$_LOGGER_DATE_FORMAT")]%s"  "$*"
 }
 _logger () {
   local logger_level=$_LOGGER_LEVEL
@@ -79,7 +79,7 @@ _logger () {
   fi
   [ -z "$ZSH_VERSION" ] || emulate -L ksh
   local msg
-  msg=$(_logger_time "[${_LOGGER_LEVELS[$level]}]: $*")
+  msg=$(_logger_time "[${_LOGGER_LEVELS[$level]}] $*")
   local log_colors=("$_LOGGER_DEBUG_COLOR" "$_LOGGER_INFO_COLOR" "$_LOGGER_NOTICE_COLOR" "$_LOGGER_WARNING_COLOR" "$_LOGGER_ERROR_COLOR")
   local _logger_printf=printf
   local out=1
@@ -110,6 +110,7 @@ warn () {
 alias warning=warn
 err () {
   _logger 4 "$*"
+  return 100
 }
 alias error=err
 # }}}
