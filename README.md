@@ -56,16 +56,16 @@ ERROR|`err`, `error`
 
 Variable Name|Description|Default
 :------------|:----------|:-----
-_LOGGER_DATE_FORMAT|Output date format.|'%Y/%m/%d %H:%M:%S'
-_LOGGER_LEVEL|0: DEBUG, 1: INFO, 2: NOTICE, 3: WARN, 4: ERROR|1
-_LOGGER_STDERR_LEVEL|For levels greater than equal this level, outputs will go stderr.|4
-_LOGGER_DEBUG_COLOR|Color for DEBUG|3 (Italicized. Some terminal shows it as color inversion)
-_LOGGER_INFO_COLOR|Color for INFO|"" (Use default output color)
-_LOGGER_NOTICE_COLOR|Color for NOTICE|36 (Front color cyan)
-_LOGGER_WARNING_COLOR|Color for WARNING|33 (Front color yellow)
-_LOGGER_ERROR_COLOR|Color for ERROR|31 (Front color red)
-_LOGGER_COLOR|Color mode: never->Always no color. auto->Put color only for terminal output. always->Always put color.|auto
-_LOGGER_LEVELS|Names printed for each level. Need 5 names.|("DEBUG" "INFO" "NOTICE" "WARNING" "ERROR")
+LOGGER_DATE_FORMAT|Output date format.|'%Y/%m/%d %H:%M:%S'
+LOGGER_LEVEL|0: DEBUG, 1: INFO, 2: NOTICE, 3: WARN, 4: ERROR|1
+LOGGER_STDERR_LEVEL|For levels greater than equal this level, outputs will go stderr.|4
+LOGGER_DEBUG_COLOR|Color for DEBUG|3 (Italicized. Some terminal shows it as color inversion)
+LOGGER_INFO_COLOR|Color for INFO|"" (Use default output color)
+LOGGER_NOTICE_COLOR|Color for NOTICE|36 (Front color cyan)
+LOGGER_WARNING_COLOR|Color for WARNING|33 (Front color yellow)
+LOGGER_ERROR_COLOR|Color for ERROR|31 (Front color red)
+LOGGER_COLOR|Color mode: never->Always no color. auto->Put color only for terminal output. always->Always put color.|auto
+LOGGER_LEVELS|Names printed for each level. Need 5 names.|("DEBUG" "INFO" "NOTICE" "WARNING" "ERROR")
 
 About colors, you can find the standard definitions in
 [Standard ECMA-48](http://www.ecma-international.org/publications/standards/Ecma-048.htm)

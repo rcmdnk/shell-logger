@@ -37,46 +37,46 @@ _LOGGER_DATE="22/Aug/2018"
 # }}}
 
 # Default variables {{{
-_LOGGER_DATE_FORMAT=${_LOGGER_DATE_FORMAT:-'%Y/%m/%d %H:%M:%S'}
-_LOGGER_LEVEL=${_LOGGER_LEVEL:-1} # 0: debug, 1: info, 2: notice, 3: warning, 4: error
-_LOGGER_STDERR_LEVEL=${_LOGGER_STDERR_LEVEL:-4}
-_LOGGER_DEBUG_COLOR=${_LOGGER_INFO_COLOR:-"3"}
-_LOGGER_INFO_COLOR=${_LOGGER_INFO_COLOR:-""}
-_LOGGER_NOTICE_COLOR=${_LOGGER_INFO_COLOR:-"36"}
-_LOGGER_WARNING_COLOR=${_LOGGER_INFO_COLOR:-"33"}
-_LOGGER_ERROR_COLOR=${_LOGGER_INFO_COLOR:-"31"}
-_LOGGER_COLOR=${_LOGGER_COLOR:-auto}
-_LOGGER_COLORS=("$_LOGGER_DEBUG_COLOR" "$_LOGGER_INFO_COLOR" "$_LOGGER_NOTICE_COLOR" "$_LOGGER_WARNING_COLOR" "$_LOGGER_ERROR_COLOR")
-if [ "${_LOGGER_LEVELS}" = "" ];then
-  _LOGGER_LEVELS=("DEBUG" "INFO" "NOTICE" "WARNING" "ERROR")
+LOGGER_DATE_FORMAT=${LOGGER_DATE_FORMAT:-'%Y/%m/%d %H:%M:%S'}
+LOGGER_LEVEL=${LOGGER_LEVEL:-1} # 0: debug, 1: info, 2: notice, 3: warning, 4: error
+LOGGER_STDERR_LEVEL=${LOGGER_STDERR_LEVEL:-4}
+LOGGER_DEBUG_COLOR=${LOGGER_INFO_COLOR:-"3"}
+LOGGER_INFO_COLOR=${LOGGER_INFO_COLOR:-""}
+LOGGER_NOTICE_COLOR=${LOGGER_INFO_COLOR:-"36"}
+LOGGER_WARNING_COLOR=${LOGGER_INFO_COLOR:-"33"}
+LOGGER_ERROR_COLOR=${LOGGER_INFO_COLOR:-"31"}
+LOGGER_COLOR=${LOGGER_COLOR:-auto}
+LOGGER_COLORS=("$LOGGER_DEBUG_COLOR" "$LOGGER_INFO_COLOR" "$LOGGER_NOTICE_COLOR" "$LOGGER_WARNING_COLOR" "$LOGGER_ERROR_COLOR")
+if [ "${LOGGER_LEVELS}" = "" ];then
+  LOGGER_LEVELS=("DEBUG" "INFO" "NOTICE" "WARNING" "ERROR")
 fi
 # }}}
 
 # Functions {{{
 _logger_version () {
-  printf "%s %s %s\\n" "$_LOGGER_NAME" "$_LOGGER_VERSION" "$_LOGGER_DATE"
+  printf "%s %s %s\\n" "$LOGGER_NAME" "$LOGGER_VERSION" "$LOGGER_DATE"
 }
 
 _logger_level () {
   local level=$1
   shift
   [ -z "$ZSH_VERSION" ] || emulate -L ksh
-  printf "[${_LOGGER_LEVELS[$level]}] $*"
+  printf "[${LOGGER_LEVELS[$level]}] $*"
 }
 
 _logger_time () {
-  printf "[$(date +"$_LOGGER_DATE_FORMAT")] $*"
+  printf "[$(date +"$LOGGER_DATE_FORMAT")] $*"
 }
 
 
 _get_logger_level () {
-  if expr "$_LOGGER_LEVEL" : '[0-9]*' >/dev/null;then
-    echo "$_LOGGER_LEVEL"
+  if expr "$LOGGER_LEVEL" : '[0-9]*' >/dev/null;then
+    echo "$LOGGER_LEVEL"
   else
     local logger_level=0
     local n=0
-    for l in "${_LOGGER_LEVELS[@]}";do
-      if [ "$_LOGGER_LEVEL" = "$l" ];then
+    for l in "${LOGGER_LEVELS[@]}";do
+      if [ "$LOGGER_LEVEL" = "$l" ];then
         logger_level=$n
         break
       fi
@@ -92,18 +92,18 @@ _logger () {
   fi
   local level="$1"
   shift
-  if [ "$level" -lt "$(_get_logger_level "$_LOGGER_LEVEL")" ];then
+  if [ "$level" -lt "$(_get_logger_level "$LOGGER_LEVEL")" ];then
     return
   fi
   local msg=$(_logger_time "$(_logger_level "$level" "$*")")
   local _logger_printf=printf
   local out=1
-  if [ "$level" -ge "$_LOGGER_STDERR_LEVEL" ];then
+  if [ "$level" -ge "$LOGGER_STDERR_LEVEL" ];then
     out=2
     _logger_printf=">&2 printf"
   fi
-  if [ "$_LOGGER_COLOR" = "always" ] || ([ "$_LOGGER_COLOR" = "auto" ] && [ -t $out ]);then
-    eval "$_logger_printf \"\\e[${_LOGGER_COLORS[$level]}m%s\\e[m\\n\"  \"$msg\""
+  if [ "$LOGGER_COLOR" = "always" ] || ([ "$LOGGER_COLOR" = "auto" ] && [ -t $out ]);then
+    eval "$_logger_printf \"\\e[${LOGGER_COLORS[$level]}m%s\\e[m\\n\"  \"$msg\""
   else
     eval "$_logger_printf \"%s\\n\" \"$msg\""
   fi
