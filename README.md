@@ -66,6 +66,9 @@ LOGGER_WARNING_COLOR|Color for WARNING|33 (Front color yellow)
 LOGGER_ERROR_COLOR|Color for ERROR|31 (Front color red)
 LOGGER_COLOR|Color mode: never->Always no color. auto->Put color only for terminal output. always->Always put color.|auto
 LOGGER_LEVELS|Names printed for each level. Need 5 names.|("DEBUG" "INFO" "NOTICE" "WARNING" "ERROR")
+LOGGER_SHOW_TIME|Show time information|1
+LOGGER_SHOW_FILE|Show file/line information|1
+LOGGER_SHOW_LEVEL|Show level|1
 LOGGER_ERROR_RETURN_CODE|Error reutrn code of `err`/`error`|100
 LOGGER_ERROR_TRACE|If 1, error trace back is shown by `err`/`error`|1
 

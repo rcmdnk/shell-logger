@@ -50,9 +50,16 @@ LOGGER_COLORS=("$LOGGER_DEBUG_COLOR" "$LOGGER_INFO_COLOR" "$LOGGER_NOTICE_COLOR"
 if [ "${LOGGER_LEVELS}" = "" ];then
   LOGGER_LEVELS=("DEBUG" "INFO" "NOTICE" "WARNING" "ERROR")
 fi
+LOGGER_SHOW_TIME=${LOGGER_SHOW_TIME:-1}
+LOGGER_SHOW_FILE=${LOGGER_SHOW_FILE:-1}
+LOGGER_SHOW_LEVEL=${LOGGER_SHOW_LEVEL:-1}
 LOGGER_ERROR_RETURN_CODE=${LOGGER_ERROR_RETURN_CODE:-100}
 LOGGER_ERROR_TRACE=${LOGGER_ERROR_TRACE:-1}
 # }}}
+
+# Other global variables {{{
+_LOGGER_WRAP=0
+#}}}
 
 # Functions {{{
 _logger_version () {
@@ -80,6 +87,7 @@ _get_level () {
 }
 
 _logger_level () {
+  [ "$LOGGER_SHOW_LEVEL" -ne 1 ] && return
   if [ $# -eq 1 ];then
     local level=$1
   else
@@ -90,14 +98,28 @@ _logger_level () {
 }
 
 _logger_time () {
+  [ "$LOGGER_SHOW_TIME" -ne 1 ] && return
   printf "[$(date +"$LOGGER_DATE_FORMAT")]"
 }
 
-_logger_file_info () {
-  printf "[${BASH_SOURCE[1]}]"
+_logger_file () {
+  [ "$LOGGER_SHOW_FILE" -ne 1 ] && return
+  local i=0
+  if [ $# -ne 0 ];then
+    i=$1
+  fi
+  if [ -n "$BASH_VERSION" ];then
+    printf "[${BASH_SOURCE[$((i+1))]}:${BASH_LINENO[$i]}]"
+  else
+    emulate -L ksh
+    printf "[${funcfiletrace[$i]}]"
+  fi
 }
 
 _logger () {
+  ((_LOGGER_WRAP++))
+  local wrap=${_LOGGER_WRAP}
+  _LOGGER_WRAP=0
   if [ $# -eq 0 ];then
     return
   fi
@@ -106,7 +128,7 @@ _logger () {
   if [ "$level" -lt "$(_get_level "$LOGGER_LEVEL")" ];then
     return
   fi
-  local msg="$(_logger_time)$(_logger_level "$level") $*"
+  local msg="$(_logger_time)$(_logger_file "$wrap")$(_logger_level "$level") $*"
   local _logger_printf=printf
   local out=1
   if [ "$level" -ge "$LOGGER_STDERR_LEVEL" ];then
@@ -122,31 +144,39 @@ _logger () {
 }
 
 debug () {
+  ((_LOGGER_WRAP++))
   _logger 0 "$*"
 }
 
 information () {
+  ((_LOGGER_WRAP++))
   _logger 1 "$*"
 }
 info () {
+  ((_LOGGER_WRAP++))
   information "$*"
 }
 
 notification () {
+  ((_LOGGER_WRAP++))
   _logger 2 "$*"
 }
 notice () {
+  ((_LOGGER_WRAP++))
   notification "$*"
 }
 
 warning () {
+  ((_LOGGER_WRAP++))
   _logger 3 "$*"
 }
 warn () {
+  ((_LOGGER_WRAP++))
   warning "$*"
 }
 
 error () {
+  ((_LOGGER_WRAP++))
   if [ "$LOGGER_ERROR_TRACE" -eq 1 ];then
     [ -z "$ZSH_VERSION" ] || emulate -L ksh
     local first=0
@@ -200,6 +230,7 @@ error () {
   return "$LOGGER_ERROR_RETURN_CODE"
 }
 err () {
+  ((_LOGGER_WRAP++))
   error "$*"
 }
 # }}}
