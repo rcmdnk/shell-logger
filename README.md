@@ -1,8 +1,8 @@
 # shell-logger
 
-Logger for shell script.
+Logger for shell script, working on Bash and Zsh.
 
-This includes functions of `debug`, `info`, `notice`, `warning` and `error`.
+This includes functions of `debug`, `info`(`information`), `notice`(`notification`), `warn`(`warning`) and `err`(`error`).
 Each output is formatted with date-time and colored by each color definition.
 
 These color codes are removed when the output is passed to a pipe or written into files.
@@ -12,6 +12,17 @@ These color codes are removed when the output is passed to a pipe or written int
 
 # Installation
 
+You can use an install script on the web like:
+
+    $ curl -fsSL https://raw.github.com/rcmdnk/shell-logger/install/install.sh| sh
+
+This will install scripts to `/usr/etc`
+and you may be asked root password.
+
+If you want to install other directory, do like:
+
+    $ curl -fsSL https://raw.github.com/rcmdnk/shell-logger/install/install.sh|  prefix=~/usr/local/ sh
+
 On Mac, you can install **etc/shell-logger.sh** by Homebrew:
 
     $ brew tap rcmdnk/rcmdnkpac/shell-logger
@@ -20,11 +31,19 @@ The file will be installed in **$(brew --prefix)/etc** (normally **/usr/local/et
 
 Otherwise download shell-logger.sh and place it where you like.
 
+
+Once **shell-logger.sh** is installed,
+source it in your `.bashrc` or `.zshrc` like:
+
+```bash
+source /path/to/shell-logger.sh
+```
+
 # Usage
 
 In your script, source shell-logger:
 
-    source /usr/local/etc/shell-logger.sh
+    source /path/to/shell-logger.sh
 
 Then, you can use such `info` or `err` command in your script like:
 
