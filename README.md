@@ -7,7 +7,17 @@ Each output is formatted with date-time and colored by each color definition.
 
 These color codes are removed when the output is passed to a pipe or written into files.
 
+* Use as interactive command
+
 ![shelllogger](https://github.com/rcmdnk/shell-logger/blob/images/shelllogger.jpg)
+
+* Each output and color
+
+![colors](https://github.com/rcmdnk/shell-logger/blob/images/colors.jpg)
+
+* Traceback  at error
+
+![traceback](https://github.com/rcmdnk/shell-logger/blob/images/traceback.jpg)
 
 
 # Installation
