@@ -205,17 +205,35 @@ error () {
         local line=${BASH_LINENO[$i]}
         local func=""
         if [ ${BASH_LINENO[$((i+1))]} -ne 0 ];then
-          func=", in ${FUNCNAME[$((i+1))]}"
+          if [ "${FUNCNAME[$((i+1))]}" = "source" ];then
+            func=", in ${BASH_SOURCE[$((i+2))]}"
+          else
+            func=", in ${FUNCNAME[$((i+1))]}"
+          fi
         fi
-        local func_call="${FUNCNAME[$i]}()"
+        local func_call="${FUNCNAME[$i]}"
+        if [ "$func_call" = "source" ];then
+          func_call="${func_call} ${BASH_SOURCE[$i]}"
+        else
+          func_call="${func_call}()"
+        fi
       else
         local file=${funcfiletrace[$i]%:*}
         local line=${funcfiletrace[$i]#*:}
         local func=""
         if [ -n "${funcstack[$((i+1))]}" ];then
-          func=", in ${funcstack[$((i+1))]}"
+          if [ "${funcstack[$((i+1))]}" = "${funcfiletrace[$i]%:*}" ];then
+            func=", in ${funcfiletrace[$((i+1))]%:*}"
+          else
+            func=", in ${funcstack[$((i+1))]}"
+          fi
         fi
-        local func_call="${funcstack[$i]}()"
+        local func_call="${funcstack[$i]}"
+        if [ "$func_call" = "${funcfiletrace[$((i-1))]%:*}" ];then
+          func_call="source ${funcfiletrace[$((i-1))]%:*}"
+        else
+          func_call="${func_call}()"
+        fi
       fi
       echo "  File \"${file}\", line ${line}${func}"
       if [ $i -gt $first ];then

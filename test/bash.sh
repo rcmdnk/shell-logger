@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
+dir=$(dirname "$0")
 call_main () {
-  . ./main.sh
+  . "${dir}/main.sh"
 }
 
 call_main
