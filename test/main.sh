@@ -1,0 +1,59 @@
+#!/bin/bash
+
+source ../etc/shell-logger.sh
+
+LOGGER_LEVEL=0
+LOGGER_ERROR_TRACE=0
+LOGGER_STDERR_LEVEL=4
+echo "============================================================================="
+echo "Followings should be shown:"
+echo "    debug, information, info, notification, notice, warning, warn, error, err"
+echo "============================================================================="
+debug "debug" 2>/dev/null
+information "information" 2>/dev/null
+info "info" 2>/dev/null
+notification "notification" 2>/dev/null
+notice "notice" 2>/dev/null
+warning "warning" 2>/dev/null
+warn "warn" 2>/dev/null
+error "error" >/dev/null
+err "err" >/dev/null
+echo ""
+echo "============================================================================="
+echo "Error code check: LOGGER_ERROR_RETURN_CODE=$LOGGER_ERROR_RETURN_CODE"
+echo "============================================================================="
+ret=$?
+echo "error return code: $ret"
+
+echo ""
+echo "============================================================================="
+echo "LOGGER_LEVEL=2 (NOTICE), debug and info should not be shown"
+echo "============================================================================="
+LOGGER_LEVEL=2
+debug "debug: should not be shown"
+info "info: should not be shown"
+notice "notice: should be shown"
+warn "warn: should be shown"
+err "err: should be shown"
+
+echo ""
+echo "============================================================================="
+echo "TRACE BACK test"
+echo "============================================================================="
+LOGGER_ERROR_TRACE=1
+
+make_error () {
+  err "err() is called"
+  echo
+  error "error() is called"
+}
+
+wrapper () {
+  make_error
+}
+
+main () {
+  wrapper
+}
+
+main
