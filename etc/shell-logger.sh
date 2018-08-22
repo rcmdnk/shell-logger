@@ -7,8 +7,8 @@
 # Homepage: https://github.com/rcmdnk/shell-logger
 #
 _LOGGER_NAME="shell-logger"
-_LOGGER_VERSION="v0.0.2"
-_LOGGER_DATE="23/Jan/2017"
+_LOGGER_VERSION="v0.1.0"
+_LOGGER_DATE="22/Aug/2018"
 # }}}
 
 ## License {{{
@@ -45,7 +45,8 @@ _LOGGER_INFO_COLOR=${_LOGGER_INFO_COLOR:-""}
 _LOGGER_NOTICE_COLOR=${_LOGGER_INFO_COLOR:-"36"}
 _LOGGER_WARNING_COLOR=${_LOGGER_INFO_COLOR:-"33"}
 _LOGGER_ERROR_COLOR=${_LOGGER_INFO_COLOR:-"31"}
-_LOGGER_ALWAYS_COLOR=${_LOGGER_INFO_COLOR:-0}
+_LOGGER_COLOR=${_LOGGER_COLOR:-auto}
+_LOGGER_COLORS=("$_LOGGER_DEBUG_COLOR" "$_LOGGER_INFO_COLOR" "$_LOGGER_NOTICE_COLOR" "$_LOGGER_WARNING_COLOR" "$_LOGGER_ERROR_COLOR")
 if [ "${_LOGGER_LEVELS}" = "" ];then
   _LOGGER_LEVELS=("DEBUG" "INFO" "NOTICE" "WARNING" "ERROR")
 fi
@@ -53,16 +54,26 @@ fi
 
 # Functions {{{
 _logger_version () {
-  printf "%s %s %s\n" "$_LOGGER_NAME" "$_LOGGER_VERSION" "$_LOGGER_DATE"
+  printf "%s %s %s\\n" "$_LOGGER_NAME" "$_LOGGER_VERSION" "$_LOGGER_DATE"
 }
+
+_logger_level () {
+  local level=$1
+  shift
+  [ -z "$ZSH_VERSION" ] || emulate -L ksh
+  printf "[${_LOGGER_LEVELS[$level]}] $*"
+}
+
 _logger_time () {
-  printf "[$(date +"$_LOGGER_DATE_FORMAT")]%s"  "$*"
+  printf "[$(date +"$_LOGGER_DATE_FORMAT")] $*"
 }
-_logger () {
-  local logger_level=$_LOGGER_LEVEL
-  expr "$_LOGGER_LEVEL" + 1 >/dev/null 2>&1
-  if [ $? -eq 2 ];then
-    logger_level=0
+
+
+_get_logger_level () {
+  if expr "$_LOGGER_LEVEL" : '[0-9]*' >/dev/null;then
+    echo "$_LOGGER_LEVEL"
+  else
+    local logger_level=0
     local n=0
     for l in "${_LOGGER_LEVELS[@]}";do
       if [ "$_LOGGER_LEVEL" = "$l" ];then
@@ -71,46 +82,55 @@ _logger () {
       fi
       ((n++))
     done
+    echo $logger_level
   fi
-  local level=$1
-  shift
-  if [ "$level" -lt "$logger_level" ];then
+}
+
+_logger () {
+  if [ $# -eq 0 ];then
     return
   fi
-  [ -z "$ZSH_VERSION" ] || emulate -L ksh
-  local msg
-  msg=$(_logger_time "[${_LOGGER_LEVELS[$level]}] $*")
-  local log_colors=("$_LOGGER_DEBUG_COLOR" "$_LOGGER_INFO_COLOR" "$_LOGGER_NOTICE_COLOR" "$_LOGGER_WARNING_COLOR" "$_LOGGER_ERROR_COLOR")
+  local level="$1"
+  shift
+  if [ "$level" -lt "$(_get_logger_level "$_LOGGER_LEVEL")" ];then
+    return
+  fi
+  local msg=$(_logger_time "$(_logger_level "$level" "$*")")
   local _logger_printf=printf
   local out=1
   if [ "$level" -ge "$_LOGGER_STDERR_LEVEL" ];then
     out=2
     _logger_printf=">&2 printf"
   fi
-  if [ "$_LOGGER_ALWAYS_COLOR" = 1 ] || ([ "$_LOGGER_ALWAYS_COLOR" != -1 ] && [ -t $out ]);then
-    eval "$_logger_printf \"\\e[${log_colors[$level]}m%s\\e[m\\n\"  \"$msg\""
+  if [ "$_LOGGER_COLOR" = "always" ] || ([ "$_LOGGER_COLOR" = "auto" ] && [ -t $out ]);then
+    eval "$_logger_printf \"\\e[${_LOGGER_COLORS[$level]}m%s\\e[m\\n\"  \"$msg\""
   else
     eval "$_logger_printf \"%s\\n\" \"$msg\""
   fi
 }
+
 debug () {
   _logger 0 "$*"
 }
-info () {
+
+information () {
   _logger 1 "$*"
 }
-alias information=info
-notice () {
+alias info=information
+
+notification () {
   _logger 2 "$*"
 }
-alias notification=notice
-warn () {
+alias notice=notification
+
+warning () {
   _logger 3 "$*"
 }
-alias warning=warn
-err () {
+alias warn=warning
+
+error () {
   _logger 4 "$*"
   return 100
 }
-alias error=err
+alias err=error
 # }}}

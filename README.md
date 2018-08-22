@@ -31,6 +31,8 @@ Then, you can use such `info` or `err` command in your script like:
 ```bash
 #!/bin/bash
 
+source /usr/local/etc/shell-logger.sh
+
 test_command
 ret=$?
 if [ ret = 0 ];then
@@ -62,7 +64,7 @@ _LOGGER_INFO_COLOR|Color for INFO|"" (Use default output color)
 _LOGGER_NOTICE_COLOR|Color for NOTICE|36 (Front color cyan)
 _LOGGER_WARNING_COLOR|Color for WARNING|33 (Front color yellow)
 _LOGGER_ERROR_COLOR|Color for ERROR|31 (Front color red)
-_LOGGER_ALWAYS_COLOR|Color mode. -1: Always no color. 0: Put color only for terminal output. 1: Always put color.|0
+_LOGGER_COLOR|Color mode: never->Always no color. auto->Put color only for terminal output. always->Always put color.|auto
 _LOGGER_LEVELS|Names printed for each level. Need 5 names.|("DEBUG" "INFO" "NOTICE" "WARNING" "ERROR")
 
 About colors, you can find the standard definitions in
@@ -96,3 +98,4 @@ set:
 
     _LOGGER_ERROR_COLOR="37;41"
 
+You can easily check colors by [escseqcheck](https://github.com/rcmdnk/escape_sequence/blob/master/bin/escseqcheck).
