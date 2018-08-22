@@ -50,40 +50,51 @@ LOGGER_COLORS=("$LOGGER_DEBUG_COLOR" "$LOGGER_INFO_COLOR" "$LOGGER_NOTICE_COLOR"
 if [ "${LOGGER_LEVELS}" = "" ];then
   LOGGER_LEVELS=("DEBUG" "INFO" "NOTICE" "WARNING" "ERROR")
 fi
+LOGGER_ERROR_RETURN_CODE=${LOGGER_ERROR_RETURN_CODE:-100}
+LOGGER_ERROR_TRACE=${LOGGER_ERROR_TRACE:-1} # Only for Bash
 # }}}
 
 # Functions {{{
 _logger_version () {
-  printf "%s %s %s\\n" "$LOGGER_NAME" "$LOGGER_VERSION" "$LOGGER_DATE"
+  printf "%s %s %s\\n" "$_LOGGER_NAME" "$_LOGGER_VERSION" "$_LOGGER_DATE"
+}
+
+_get_level () {
+  if [ $# -eq 0 ];then
+    local level=1
+  else
+    local level=$1
+  fi
+  if ! expr "$level" : '[0-9]*' >/dev/null;then
+    [ -z "$ZSH_VERSION" ] || emulate -L ksh
+    local i=0
+    while [ $i -lt ${#LOGGER_LEVELS[@]} ];do
+      if [ "$level" = "${LOGGER_LEVELS[$i]}" ];then
+        level=$i
+        break
+      fi
+      ((i++))
+    done
+  fi
+  echo $level
 }
 
 _logger_level () {
-  local level=$1
-  shift
+  if [ $# -eq 1 ];then
+    local level=$1
+  else
+    local level=1
+  fi
   [ -z "$ZSH_VERSION" ] || emulate -L ksh
-  printf "[${LOGGER_LEVELS[$level]}] $*"
+  printf "[${LOGGER_LEVELS[$level]}]"
 }
 
 _logger_time () {
-  printf "[$(date +"$LOGGER_DATE_FORMAT")] $*"
+  printf "[$(date +"$LOGGER_DATE_FORMAT")]"
 }
 
-
-_get_logger_level () {
-  if expr "$LOGGER_LEVEL" : '[0-9]*' >/dev/null;then
-    echo "$LOGGER_LEVEL"
-  else
-    local logger_level=0
-    local n=0
-    for l in "${LOGGER_LEVELS[@]}";do
-      if [ "$LOGGER_LEVEL" = "$l" ];then
-        logger_level=$n
-        break
-      fi
-      ((n++))
-    done
-    echo $logger_level
-  fi
+_logger_file_info () {
+  printf "[${BASH_SOURCE[1]}]"
 }
 
 _logger () {
@@ -92,10 +103,10 @@ _logger () {
   fi
   local level="$1"
   shift
-  if [ "$level" -lt "$(_get_logger_level "$LOGGER_LEVEL")" ];then
+  if [ "$level" -lt "$(_get_level "$LOGGER_LEVEL")" ];then
     return
   fi
-  local msg=$(_logger_time "$(_logger_level "$level" "$*")")
+  local msg="$(_logger_time)$(_logger_level "$level") $*"
   local _logger_printf=printf
   local out=1
   if [ "$level" -ge "$LOGGER_STDERR_LEVEL" ];then
@@ -116,21 +127,47 @@ debug () {
 information () {
   _logger 1 "$*"
 }
-alias info=information
+info () {
+  information "$*"
+}
 
 notification () {
   _logger 2 "$*"
 }
-alias notice=notification
+notice () {
+  notification "$*"
+}
 
 warning () {
   _logger 3 "$*"
 }
-alias warn=warning
+warn () {
+  warning "$*"
+}
 
 error () {
+  if [ -z "$ZSH_VERSION" ] && [ "$LOGGER_ERROR_TRACE" -eq 1 ];then
+    local first=0
+    local current_source=$(echo "${BASH_SOURCE[0]##*/}"|cut -d"." -f1)
+    if [ "$current_source" = "shell-logger" ] && [ "${FUNCNAME[1]}" = err ];then
+      local first=1
+    fi
+    echo "Traceback (most recent call last):"
+    local i=$((${#BASH_LINENO[@]}-2))
+    while [ $i -ge $first ];do
+      echo "  File \"${BASH_SOURCE[$((i+1))]}\", line ${BASH_LINENO[$i]}, in ${FUNCNAME[$((i+1))]}"
+      if [ $i -gt $first ];then
+        echo "    ${FUNCNAME[$i]}()"
+      else
+        echo ""
+      fi
+      ((i--))
+    done
+  fi
   _logger 4 "$*"
-  return 100
+  return "$LOGGER_ERROR_RETURN_CODE"
 }
-alias err=error
+err () {
+  error "$*"
+}
 # }}}
