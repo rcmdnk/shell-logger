@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env zsh
 call_main () {
   . ./main.sh
 }

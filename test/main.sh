@@ -1,10 +1,11 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 source ../etc/shell-logger.sh
 
 LOGGER_LEVEL=0
 LOGGER_ERROR_TRACE=0
 LOGGER_STDERR_LEVEL=4
+LOGGER_COLOR=auto
 echo "============================================================================="
 echo "Followings should be shown:"
 echo "    debug, information, info, notification, notice, warning, warn, error, err"
@@ -18,13 +19,20 @@ warning "warning" 2>/dev/null
 warn "warn" 2>/dev/null
 error "error" >/dev/null
 err "err" >/dev/null
+ret=$?
 echo ""
 echo "============================================================================="
 echo "Error code check: LOGGER_ERROR_RETURN_CODE=$LOGGER_ERROR_RETURN_CODE"
 echo "============================================================================="
-ret=$?
 echo "error return code: $ret"
 
+echo ""
+echo "============================================================================="
+echo "No color test"
+echo "============================================================================="
+LOGGER_COLOR=never
+err "erro: No color test"
+LOGGER_COLOR=auto
 echo ""
 echo "============================================================================="
 echo "LOGGER_LEVEL=2 (NOTICE), debug and info should not be shown"

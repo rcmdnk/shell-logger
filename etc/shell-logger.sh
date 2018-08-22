@@ -113,7 +113,8 @@ _logger () {
     out=2
     _logger_printf=">&2 printf"
   fi
-  if [ "$LOGGER_COLOR" = "always" ] || ([ "$LOGGER_COLOR" = "auto" ] && [ -t $out ]);then
+  if [ "$LOGGER_COLOR" = "always" ] || { test "$LOGGER_COLOR" = "auto"  && test  -t $out ; };then
+    [ -z "$ZSH_VERSION" ] || emulate -L ksh
     eval "$_logger_printf \"\\e[${LOGGER_COLORS[$level]}m%s\\e[m\\n\"  \"$msg\""
   else
     eval "$_logger_printf \"%s\\n\" \"$msg\""
@@ -146,18 +147,42 @@ warn () {
 }
 
 error () {
-  if [ -z "$ZSH_VERSION" ] && [ "$LOGGER_ERROR_TRACE" -eq 1 ];then
+  if [ "$LOGGER_ERROR_TRACE" -eq 1 ];then
+    [ -z "$ZSH_VERSION" ] || emulate -L ksh
     local first=0
-    local current_source=$(echo "${BASH_SOURCE[0]##*/}"|cut -d"." -f1)
-    if [ "$current_source" = "shell-logger" ] && [ "${FUNCNAME[1]}" = err ];then
+    if [ -n "$BASH_VERSION" ];then
+      local current_source=$(echo "${BASH_SOURCE[0]##*/}"|cut -d"." -f1)
+      local func="${FUNCNAME[1]}"
+      local i=$((${#BASH_LINENO[@]}-2))
+    else
+      local current_source=$(echo "${funcfiletrace[0]##*/}"|cut -d":" -f1|cut -d"." -f1)
+      local func="${funcstack[1]}"
+      local i=$((${#funcfiletrace[@]}-1))
+    fi
+    if [ "$current_source" = "shell-logger" ] && [ "$func" = err ];then
       local first=1
     fi
-    echo "Traceback (most recent call last):"
-    local i=$((${#BASH_LINENO[@]}-2))
     while [ $i -ge $first ];do
-      echo "  File \"${BASH_SOURCE[$((i+1))]}\", line ${BASH_LINENO[$i]}, in ${FUNCNAME[$((i+1))]}"
+      if [ -n "$BASH_VERSION" ];then
+        local file=${BASH_SOURCE[$((i+1))]}
+        local line=${BASH_LINENO[$i]}
+        local func=""
+        if [ ${BASH_LINENO[$((i+1))]} -ne 0 ];then
+          func=", in ${FUNCNAME[$((i+1))]}"
+        fi
+        local func_call="${FUNCNAME[$i]}()"
+      else
+        local file=${funcfiletrace[$i]%:*}
+        local line=${funcfiletrace[$i]#*:}
+        local func=""
+        if [ -n "${funcstack[$((i+1))]}" ];then
+          func=", in ${funcstack[$((i+1))]}"
+        fi
+        local func_call="${funcstack[$i]}()"
+      fi
+      echo "  File \"${file}\", line ${line}${func}"
       if [ $i -gt $first ];then
-        echo "    ${FUNCNAME[$i]}()"
+        echo "    $func_call"
       else
         echo ""
       fi
