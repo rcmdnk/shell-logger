@@ -67,7 +67,7 @@ LOGGER_ERROR_COLOR|Color for ERROR|31 (Front color red)
 LOGGER_COLOR|Color mode: never->Always no color. auto->Put color only for terminal output. always->Always put color.|auto
 LOGGER_LEVELS|Names printed for each level. Need 5 names.|("DEBUG" "INFO" "NOTICE" "WARNING" "ERROR")
 LOGGER_ERROR_RETURN_CODE|Error reutrn code of `err`/`error`|100
-LOGGER_ERROR_TRACE|If 1, error trace back is shown by `err`/`error` (Only for BASH)|1
+LOGGER_ERROR_TRACE|If 1, error trace back is shown by `err`/`error`|1
 
 About colors, you can find the standard definitions in
 [Standard ECMA-48](http://www.ecma-international.org/publications/standards/Ecma-048.htm)

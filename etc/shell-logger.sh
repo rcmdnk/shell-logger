@@ -51,7 +51,7 @@ if [ "${LOGGER_LEVELS}" = "" ];then
   LOGGER_LEVELS=("DEBUG" "INFO" "NOTICE" "WARNING" "ERROR")
 fi
 LOGGER_ERROR_RETURN_CODE=${LOGGER_ERROR_RETURN_CODE:-100}
-LOGGER_ERROR_TRACE=${LOGGER_ERROR_TRACE:-1} # Only for Bash
+LOGGER_ERROR_TRACE=${LOGGER_ERROR_TRACE:-1}
 # }}}
 
 # Functions {{{
@@ -153,14 +153,21 @@ error () {
     if [ -n "$BASH_VERSION" ];then
       local current_source=$(echo "${BASH_SOURCE[0]##*/}"|cut -d"." -f1)
       local func="${FUNCNAME[1]}"
-      local i=$((${#BASH_LINENO[@]}-2))
+      local i=$((${#FUNCNAME[@]}-2))
     else
       local current_source=$(echo "${funcfiletrace[0]##*/}"|cut -d":" -f1|cut -d"." -f1)
       local func="${funcstack[1]}"
-      local i=$((${#funcfiletrace[@]}-1))
+      local i=$((${#funcstack[@]}-1))
+      local last_source=${funcfiletrace[$i]%:*}
+      if [ "$last_source" = zsh ];then
+        ((i--))
+      fi
     fi
     if [ "$current_source" = "shell-logger" ] && [ "$func" = err ];then
       local first=1
+    fi
+    if [ $i -ge $first ];then
+      echo "Traceback (most recent call last):"
     fi
     while [ $i -ge $first ];do
       if [ -n "$BASH_VERSION" ];then
