@@ -1,6 +1,6 @@
 #!/usr/bin/env zsh
 
-source $(dirname $0)/../etc/shell-logger.sh
+source $(dirname $0)/../etc/shell-logger
 
 err "5th line in simple.sh"
 

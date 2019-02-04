@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-source "$(dirname "$0")/../etc/shell-logger.sh"
+source "$(dirname "$0")/../etc/shell-logger"
 
 LOGGER_LEVEL=0
 LOGGER_ERROR_TRACE=0

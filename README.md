@@ -33,34 +33,34 @@ If you want to install other directory, do like:
 
     $ curl -fsSL https://raw.github.com/rcmdnk/shell-logger/install/install.sh|  prefix=~/usr/local/ sh
 
-On Mac, you can install **etc/shell-logger.sh** by Homebrew:
+On Mac, you can install **etc/shell-logger** by Homebrew:
 
     $ brew tap rcmdnk/rcmdnkpac/shell-logger
 
 The file will be installed in **$(brew --prefix)/etc** (normally **/usr/local/etc**).
 
-Otherwise download shell-logger.sh and place it where you like.
+Otherwise download shell-logger and place it where you like.
 
 
-Once **shell-logger.sh** is installed,
+Once **shell-logger** is installed,
 source it in your `.bashrc` or `.zshrc` like:
 
 ```bash
-source /path/to/shell-logger.sh
+source /path/to/shell-logger
 ```
 
 # Usage
 
 In your script, source shell-logger:
 
-    source /path/to/shell-logger.sh
+    source /path/to/shell-logger
 
 Then, you can use such `info` or `err` command in your script like:
 
 ```bash
 #!/bin/bash
 
-source /usr/local/etc/shell-logger.sh
+source /usr/local/etc/shell-logger
 
 test_command
 ret=$?
