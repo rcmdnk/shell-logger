@@ -117,7 +117,7 @@ _logger_file () {
 }
 
 _logger () {
-  ((_LOGGER_WRAP++))
+  ((_LOGGER_WRAP++)) || true
   local wrap=${_LOGGER_WRAP}
   _LOGGER_WRAP=0
   if [ $# -eq 0 ];then
@@ -144,39 +144,39 @@ _logger () {
 }
 
 debug () {
-  ((_LOGGER_WRAP++))
+  ((_LOGGER_WRAP++)) || true
   _logger 0 "$*"
 }
 
 information () {
-  ((_LOGGER_WRAP++))
+  ((_LOGGER_WRAP++)) || true
   _logger 1 "$*"
 }
 info () {
-  ((_LOGGER_WRAP++))
+  ((_LOGGER_WRAP++)) || true
   information "$*"
 }
 
 notification () {
-  ((_LOGGER_WRAP++))
+  ((_LOGGER_WRAP++)) || true
   _logger 2 "$*"
 }
 notice () {
-  ((_LOGGER_WRAP++))
+  ((_LOGGER_WRAP++)) || true
   notification "$*"
 }
 
 warning () {
-  ((_LOGGER_WRAP++))
+  ((_LOGGER_WRAP++)) || true
   _logger 3 "$*"
 }
 warn () {
-  ((_LOGGER_WRAP++))
+  ((_LOGGER_WRAP++)) || true
   warning "$*"
 }
 
 error () {
-  ((_LOGGER_WRAP++))
+  ((_LOGGER_WRAP++)) || true
   if [ "$LOGGER_ERROR_TRACE" -eq 1 ];then
     {
       [ -z "${ZSH_VERSION:-}" ] || emulate -L ksh
@@ -250,7 +250,7 @@ error () {
   return "$LOGGER_ERROR_RETURN_CODE"
 }
 err () {
-  ((_LOGGER_WRAP++))
+  ((_LOGGER_WRAP++)) || true
   error "$*"
 }
 # }}}
