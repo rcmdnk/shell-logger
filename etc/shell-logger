@@ -128,7 +128,8 @@ _logger () {
   if [ "$level" -lt "$(_get_level "$LOGGER_LEVEL")" ];then
     return
   fi
-  local msg="$(_logger_time)$(_logger_file "$wrap")$(_logger_level "$level") $*"
+  local msg_prefix="$(_logger_time)$(_logger_file "$wrap")$(_logger_level "$level")"
+  local msg="${msg_prefix:+$msg_prefix }$*" # add prefix with a space only if prefix not is empty
   local _logger_printf=printf
   local out=1
   if [ "$level" -ge "$LOGGER_STDERR_LEVEL" ];then
