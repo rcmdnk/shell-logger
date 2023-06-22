@@ -47,7 +47,7 @@ LOGGER_WARNING_COLOR=${LOGGER_WARNING_COLOR:-"33"}
 LOGGER_ERROR_COLOR=${LOGGER_ERROR_COLOR:-"31"}
 LOGGER_COLOR=${LOGGER_COLOR:-auto}
 LOGGER_COLORS=("$LOGGER_DEBUG_COLOR" "$LOGGER_INFO_COLOR" "$LOGGER_NOTICE_COLOR" "$LOGGER_WARNING_COLOR" "$LOGGER_ERROR_COLOR")
-if [ "${LOGGER_LEVELS}" = "" ];then
+if [ "${LOGGER_LEVELS:-}" = "" ];then
   LOGGER_LEVELS=("DEBUG" "INFO" "NOTICE" "WARNING" "ERROR")
 fi
 LOGGER_SHOW_TIME=${LOGGER_SHOW_TIME:-1}
@@ -73,7 +73,7 @@ _get_level () {
     local level=$1
   fi
   if ! expr "$level" : '[0-9]*' >/dev/null;then
-    [ -z "$ZSH_VERSION" ] || emulate -L ksh
+    [ -z "${ZSH_VERSION:-}" ] || emulate -L ksh
     local i=0
     while [ $i -lt ${#LOGGER_LEVELS[@]} ];do
       if [ "$level" = "${LOGGER_LEVELS[$i]}" ];then
@@ -93,7 +93,7 @@ _logger_level () {
   else
     local level=1
   fi
-  [ -z "$ZSH_VERSION" ] || emulate -L ksh
+  [ -z "${ZSH_VERSION:-}" ] || emulate -L ksh
   printf "[${LOGGER_LEVELS[$level]}]"
 }
 
@@ -137,7 +137,7 @@ _logger () {
     _logger_printf=">&2 printf"
   fi
   if [ "$LOGGER_COLOR" = "always" ] || { test "$LOGGER_COLOR" = "auto"  && test  -t $out ; };then
-    [ -z "$ZSH_VERSION" ] || emulate -L ksh
+    [ -z "${ZSH_VERSION:-}" ] || emulate -L ksh
     eval "$_logger_printf \"\\e[${LOGGER_COLORS[$level]}m%s\\e[m\\n\"  \"$msg\""
   else
     eval "$_logger_printf \"%s\\n\" \"$msg\""
@@ -180,7 +180,7 @@ error () {
   ((_LOGGER_WRAP++)) || true
   if [ "$LOGGER_ERROR_TRACE" -eq 1 ];then
     {
-      [ -z "$ZSH_VERSION" ] || emulate -L ksh
+      [ -z "${ZSH_VERSION:-}" ] || emulate -L ksh
       local first=0
       if [ -n "$BASH_VERSION" ];then
         local current_source=$(echo "${BASH_SOURCE[0]##*/}"|cut -d"." -f1)
