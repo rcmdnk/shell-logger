@@ -40,14 +40,14 @@ _LOGGER_DATE="04/Feb/2019"
 LOGGER_DATE_FORMAT=${LOGGER_DATE_FORMAT:-'%Y/%m/%d %H:%M:%S'}
 LOGGER_LEVEL=${LOGGER_LEVEL:-1} # 0: debug, 1: info, 2: notice, 3: warning, 4: error
 LOGGER_STDERR_LEVEL=${LOGGER_STDERR_LEVEL:-4}
-LOGGER_DEBUG_COLOR=${LOGGER_INFO_COLOR:-"3"}
+LOGGER_DEBUG_COLOR=${LOGGER_DEBUG_COLOR:-"3"}
 LOGGER_INFO_COLOR=${LOGGER_INFO_COLOR:-""}
-LOGGER_NOTICE_COLOR=${LOGGER_INFO_COLOR:-"36"}
-LOGGER_WARNING_COLOR=${LOGGER_INFO_COLOR:-"33"}
-LOGGER_ERROR_COLOR=${LOGGER_INFO_COLOR:-"31"}
+LOGGER_NOTICE_COLOR=${LOGGER_NOTICE_COLOR:-"36"}
+LOGGER_WARNING_COLOR=${LOGGER_WARNING_COLOR:-"33"}
+LOGGER_ERROR_COLOR=${LOGGER_ERROR_COLOR:-"31"}
 LOGGER_COLOR=${LOGGER_COLOR:-auto}
 LOGGER_COLORS=("$LOGGER_DEBUG_COLOR" "$LOGGER_INFO_COLOR" "$LOGGER_NOTICE_COLOR" "$LOGGER_WARNING_COLOR" "$LOGGER_ERROR_COLOR")
-if [ "${LOGGER_LEVELS}" = "" ];then
+if [ "${LOGGER_LEVELS:-}" = "" ];then
   LOGGER_LEVELS=("DEBUG" "INFO" "NOTICE" "WARNING" "ERROR")
 fi
 LOGGER_SHOW_TIME=${LOGGER_SHOW_TIME:-1}
@@ -73,7 +73,7 @@ _get_level () {
     local level=$1
   fi
   if ! expr "$level" : '[0-9]*' >/dev/null;then
-    [ -z "$ZSH_VERSION" ] || emulate -L ksh
+    [ -z "${ZSH_VERSION:-}" ] || emulate -L ksh
     local i=0
     while [ $i -lt ${#LOGGER_LEVELS[@]} ];do
       if [ "$level" = "${LOGGER_LEVELS[$i]}" ];then
@@ -93,7 +93,7 @@ _logger_level () {
   else
     local level=1
   fi
-  [ -z "$ZSH_VERSION" ] || emulate -L ksh
+  [ -z "${ZSH_VERSION:-}" ] || emulate -L ksh
   printf "[${LOGGER_LEVELS[$level]}]"
 }
 
@@ -117,7 +117,7 @@ _logger_file () {
 }
 
 _logger () {
-  ((_LOGGER_WRAP++))
+  ((_LOGGER_WRAP++)) || true
   local wrap=${_LOGGER_WRAP}
   _LOGGER_WRAP=0
   if [ $# -eq 0 ];then
@@ -128,7 +128,8 @@ _logger () {
   if [ "$level" -lt "$(_get_level "$LOGGER_LEVEL")" ];then
     return
   fi
-  local msg="$(_logger_time)$(_logger_file "$wrap")$(_logger_level "$level") $*"
+  local msg_prefix="$(_logger_time)$(_logger_file "$wrap")$(_logger_level "$level")"
+  local msg="${msg_prefix:+$msg_prefix }$*" # add prefix with a space only if prefix not is empty
   local _logger_printf=printf
   local out=1
   if [ "$level" -ge "$LOGGER_STDERR_LEVEL" ];then
@@ -136,7 +137,7 @@ _logger () {
     _logger_printf=">&2 printf"
   fi
   if [ "$LOGGER_COLOR" = "always" ] || { test "$LOGGER_COLOR" = "auto"  && test  -t $out ; };then
-    [ -z "$ZSH_VERSION" ] || emulate -L ksh
+    [ -z "${ZSH_VERSION:-}" ] || emulate -L ksh
     eval "$_logger_printf \"\\e[${LOGGER_COLORS[$level]}m%s\\e[m\\n\"  \"$msg\""
   else
     eval "$_logger_printf \"%s\\n\" \"$msg\""
@@ -144,42 +145,42 @@ _logger () {
 }
 
 debug () {
-  ((_LOGGER_WRAP++))
+  ((_LOGGER_WRAP++)) || true
   _logger 0 "$*"
 }
 
 information () {
-  ((_LOGGER_WRAP++))
+  ((_LOGGER_WRAP++)) || true
   _logger 1 "$*"
 }
 info () {
-  ((_LOGGER_WRAP++))
+  ((_LOGGER_WRAP++)) || true
   information "$*"
 }
 
 notification () {
-  ((_LOGGER_WRAP++))
+  ((_LOGGER_WRAP++)) || true
   _logger 2 "$*"
 }
 notice () {
-  ((_LOGGER_WRAP++))
+  ((_LOGGER_WRAP++)) || true
   notification "$*"
 }
 
 warning () {
-  ((_LOGGER_WRAP++))
+  ((_LOGGER_WRAP++)) || true
   _logger 3 "$*"
 }
 warn () {
-  ((_LOGGER_WRAP++))
+  ((_LOGGER_WRAP++)) || true
   warning "$*"
 }
 
 error () {
-  ((_LOGGER_WRAP++))
+  ((_LOGGER_WRAP++)) || true
   if [ "$LOGGER_ERROR_TRACE" -eq 1 ];then
     {
-      [ -z "$ZSH_VERSION" ] || emulate -L ksh
+      [ -z "${ZSH_VERSION:-}" ] || emulate -L ksh
       local first=0
       if [ -n "$BASH_VERSION" ];then
         local current_source=$(echo "${BASH_SOURCE[0]##*/}"|cut -d"." -f1)
@@ -250,7 +251,7 @@ error () {
   return "$LOGGER_ERROR_RETURN_CODE"
 }
 err () {
-  ((_LOGGER_WRAP++))
+  ((_LOGGER_WRAP++)) || true
   error "$*"
 }
 # }}}
