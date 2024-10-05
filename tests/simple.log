@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "./simple.sh", line 9
+
+[Y/m/d H:M:S][./simple.sh:9][ERROR] 7th line in simple.sh
+Traceback (most recent call last):
+  File "./simple.sh", line 11
+
+[Y/m/d H:M:S][./simple.sh:11][ERROR] 9th line in simple.sh

@@ -1,0 +1,27 @@
+[Y/m/d H:M:S][./main.sh:23][NOTICE] notification
+[Y/m/d H:M:S][./main.sh:24][NOTICE] notice
+[Y/m/d H:M:S][./main.sh:25][WARNING] warning
+[Y/m/d H:M:S][./main.sh:26][WARNING] warn
+[Y/m/d H:M:S][./main.sh:27][ERROR] error
+[Y/m/d H:M:S][./main.sh:28][ERROR] err
+[Y/m/d H:M:S][./main.sh:47][ERROR] err: No color test
+[Y/m/d H:M:S][./main.sh:55][ERROR] erro: Always color test
+[Y/m/d H:M:S][./main.sh:65][NOTICE] notice: should be shown
+[Y/m/d H:M:S][./main.sh:66][WARNING] warn: should be shown
+[Y/m/d H:M:S][./main.sh:67][ERROR] err: should be shown
+[Y/m/d H:M:S][./main.sh:76][ERROR] err() is called
+[Y/m/d H:M:S][./main.sh:78][ERROR] error() is called
+Both output
+[Y/m/d H:M:S][./main.sh:23][NOTICE] notification
+[Y/m/d H:M:S][./main.sh:24][NOTICE] notice
+[Y/m/d H:M:S][./main.sh:25][WARNING] warning
+[Y/m/d H:M:S][./main.sh:26][WARNING] warn
+[Y/m/d H:M:S][./main.sh:27][ERROR] error
+[Y/m/d H:M:S][./main.sh:28][ERROR] err
+[Y/m/d H:M:S][./main.sh:47][ERROR] err: No color test
+[Y/m/d H:M:S][./main.sh:55][ERROR] erro: Always color test
+[Y/m/d H:M:S][./main.sh:65][NOTICE] notice: should be shown
+[Y/m/d H:M:S][./main.sh:66][WARNING] warn: should be shown
+[Y/m/d H:M:S][./main.sh:67][ERROR] err: should be shown
+[Y/m/d H:M:S][./main.sh:76][ERROR] err() is called
+[Y/m/d H:M:S][./main.sh:78][ERROR] error() is called

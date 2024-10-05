@@ -1,6 +1,13 @@
 #!/usr/bin/env bash
+# shellcheck disable=SC2034
 
+# shellcheck disable=SC1091
 source "$(dirname "$0")/../etc/shell-logger"
+
+LOGGER_DATE_FORMAT="Y/m/d H:M:S"  # Dummy date format for testing
+
+LOGGER_FILE_OUTPUT=${LOGGER_FILE_OUTPUT:-}
+LOGGER_FILE_ONLY=${LOGGER_FILE_ONLY:-}
 
 LOGGER_LEVEL=0
 LOGGER_ERROR_TRACE=0
@@ -37,13 +44,22 @@ echo "==========================================================================
 echo "No color test"
 echo "============================================================================="
 LOGGER_COLOR=never
-err "erro: No color test"
+err "err: No color test"
+LOGGER_COLOR=auto
+echo ""
+echo ""
+echo "============================================================================="
+echo "Always color test event if the output is not a terminal"
+echo "============================================================================="
+LOGGER_COLOR=always
+err "erro: Always color test"
 LOGGER_COLOR=auto
 echo ""
 echo "============================================================================="
 echo "LOGGER_LEVEL=2 (NOTICE), debug and info should not be shown"
 echo "============================================================================="
 LOGGER_LEVEL=2
+LOGGER_FILE_LEVEL=2
 debug "debug: should not be shown"
 info "info: should not be shown"
 notice "notice: should be shown"

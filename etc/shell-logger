@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+# shellcheck disable=SC2148
 
 ## Description {{{
 #
@@ -40,11 +40,11 @@ _LOGGER_DATE="04/Feb/2019"
 LOGGER_DATE_FORMAT=${LOGGER_DATE_FORMAT:-'%Y/%m/%d %H:%M:%S'}
 LOGGER_LEVEL=${LOGGER_LEVEL:-1} # 0: debug, 1: info, 2: notice, 3: warning, 4: error
 LOGGER_STDERR_LEVEL=${LOGGER_STDERR_LEVEL:-4}
-LOGGER_DEBUG_COLOR=${LOGGER_DEBUG_COLOR:-"3"}
+LOGGER_DEBUG_COLOR=${LOGGER_DEBUG_COLOR:-3}
 LOGGER_INFO_COLOR=${LOGGER_INFO_COLOR:-""}
-LOGGER_NOTICE_COLOR=${LOGGER_NOTICE_COLOR:-"36"}
-LOGGER_WARNING_COLOR=${LOGGER_WARNING_COLOR:-"33"}
-LOGGER_ERROR_COLOR=${LOGGER_ERROR_COLOR:-"31"}
+LOGGER_NOTICE_COLOR=${LOGGER_NOTICE_COLOR:-36}
+LOGGER_WARNING_COLOR=${LOGGER_WARNING_COLOR:-33}
+LOGGER_ERROR_COLOR=${LOGGER_ERROR_COLOR:-31}
 LOGGER_COLOR=${LOGGER_COLOR:-auto}
 LOGGER_COLORS=("$LOGGER_DEBUG_COLOR" "$LOGGER_INFO_COLOR" "$LOGGER_NOTICE_COLOR" "$LOGGER_WARNING_COLOR" "$LOGGER_ERROR_COLOR")
 if [ "${LOGGER_LEVELS:-}" = "" ];then
@@ -55,10 +55,16 @@ LOGGER_SHOW_FILE=${LOGGER_SHOW_FILE:-1}
 LOGGER_SHOW_LEVEL=${LOGGER_SHOW_LEVEL:-1}
 LOGGER_ERROR_RETURN_CODE=${LOGGER_ERROR_RETURN_CODE:-100}
 LOGGER_ERROR_TRACE=${LOGGER_ERROR_TRACE:-1}
+
+LOGGER_FILE_OUTPUT=${LOGGER_FILE_OUTPUT:-}
+LOGGER_FILE_ONLY=${LOGGER_FILE_ONLY:-0}
+LOGGER_FILE_LEVEL=${LOGGER_FILE_LEVEL:-$LOGGER_LEVEL}
+LOGGER_FILE_APPEND=${LOGGER_FILE_APPEND:-0}
 # }}}
 
 # Other global variables {{{
 _LOGGER_WRAP=0
+_LOGGER_FILE_APPEND=${LOGGER_FILE_APPEND}
 #}}}
 
 # Functions {{{
@@ -66,7 +72,38 @@ _logger_version () {
   printf "%s %s %s\\n" "$_LOGGER_NAME" "$_LOGGER_VERSION" "$_LOGGER_DATE"
 }
 
-_get_level () {
+_logger_time () {
+  [ "$LOGGER_SHOW_TIME" -ne 1 ] && return
+  printf "[%s]" "$(date +"$LOGGER_DATE_FORMAT")"
+}
+
+_logger_file () {
+  [ "$LOGGER_SHOW_FILE" -ne 1 ] && return
+  local i=0
+  if [ $# -ne 0 ];then
+    i=$1
+  fi
+  if [ -n "$BASH_VERSION" ];then
+    printf "[%s:%s]" "${BASH_SOURCE[$((i+1))]}" "${BASH_LINENO[$i]}"
+  else
+    emulate -L ksh
+    # shellcheck disable=SC2154
+    printf "[%s]" "${funcfiletrace[$i]}"  # jkk
+  fi
+}
+
+_logger_level () {
+  [ "$LOGGER_SHOW_LEVEL" -ne 1 ] && return
+  if [ $# -eq 1 ];then
+    local level=$1
+  else
+    local level=1
+  fi
+  [ -z "${ZSH_VERSION:-}" ] || emulate -L ksh
+  printf "[%s]" "${LOGGER_LEVELS[$level]}"
+}
+
+_logger_get_level () {
   if [ $# -eq 0 ];then
     local level=1
   else
@@ -83,37 +120,53 @@ _get_level () {
       ((i++))
     done
   fi
-  echo $level
+  echo "$level"
 }
 
-_logger_level () {
-  [ "$LOGGER_SHOW_LEVEL" -ne 1 ] && return
-  if [ $# -eq 1 ];then
-    local level=$1
+_logger_get_file_level () {
+  echo "LOGGER_FILE_OUTPUT: $LOGGER_FILE_OUTPUT" >> hoge
+  if [ "$LOGGER_FILE_OUTPUT" = "" ];then
+    echo 100
   else
-    local level=1
+    echo "$(_logger_get_level "$LOGGER_FILE_LEVEL")"
   fi
-  [ -z "${ZSH_VERSION:-}" ] || emulate -L ksh
-  printf "[${LOGGER_LEVELS[$level]}]"
 }
 
-_logger_time () {
-  [ "$LOGGER_SHOW_TIME" -ne 1 ] && return
-  printf "[$(date +"$LOGGER_DATE_FORMAT")]"
-}
-
-_logger_file () {
-  [ "$LOGGER_SHOW_FILE" -ne 1 ] && return
-  local i=0
-  if [ $# -ne 0 ];then
-    i=$1
-  fi
-  if [ -n "$BASH_VERSION" ];then
-    printf "[${BASH_SOURCE[$((i+1))]}:${BASH_LINENO[$i]}]"
+_logger_get_std_level () {
+  if [ "$LOGGER_FILE_ONLY" -eq 1 ];then
+    echo 100
   else
-    emulate -L ksh
-    printf "[${funcfiletrace[$i]}]"
+    echo "$(_logger_get_level "$LOGGER_LEVEL")"
   fi
+}
+
+_logger_check_level () {
+  if [ $# -eq 0 ];then
+    return 1
+  fi
+  local level="$1"
+  local file_level=100
+  local std_level=100
+  if [ "$LOGGER_FILE_OUTPUT" != "" ];then
+    local file_level="$(_logger_get_level "$LOGGER_FILE_LEVEL")"
+    if [ "$LOGGER_FILE_ONLY" -eq 1 ];then
+      if [ "$level" -lt "$file_level" ];then
+        return 1
+      fi
+      return 0
+    fi
+  fi
+
+  std_level="$(_logger_get_level "$LOGGER_LEVEL")"
+  local check_level="$std_level"
+  if [ "$file_level" -lt "$std_level" ];then
+    check_level="$file_level"
+  fi
+
+  if [ "$level" -lt "$check_level" ];then
+    return 1
+  fi
+  return 0
 }
 
 _logger () {
@@ -125,12 +178,29 @@ _logger () {
   fi
   local level="$1"
   shift
-  if [ "$level" -lt "$(_get_level "$LOGGER_LEVEL")" ];then
+  local file_level="$(_logger_get_file_level)"
+  local std_level="$(_logger_get_std_level)"
+  if [ "$level" -lt "$file_level" ] && [ "$level" -lt "$std_level" ];then
     return
   fi
-  local msg_prefix="$(_logger_time)$(_logger_file "$wrap")$(_logger_level "$level")"
+  local msg_prefix
+  msg_prefix="$(_logger_time)$(_logger_file "$wrap")$(_logger_level "$level")"
   local msg="${msg_prefix:+$msg_prefix }$*" # add prefix with a space only if prefix not is empty
   msg="${msg/\$/\\\$}" # escape $ is msg to be able to use eval below without trying to resolve a variable
+
+  if [ "$LOGGER_FILE_OUTPUT" != "" ] && [ "$level" -ge "$file_level" ];then
+    if [ "$_LOGGER_FILE_APPEND" -eq 1 ];then
+      echo "$msg" >> "$LOGGER_FILE_OUTPUT"
+    else
+      echo "$msg" > "$LOGGER_FILE_OUTPUT"
+      _LOGGER_FILE_APPEND=1
+    fi
+  fi
+
+  if [ "$LOGGER_FILE_ONLY" -eq 1 ] || [ "$level" -lt "$std_level" ];then
+    return
+  fi
+
   local _logger_printf=printf
   local out=1
   if [ "$level" -ge "$LOGGER_STDERR_LEVEL" ];then
@@ -154,6 +224,7 @@ information () {
   ((_LOGGER_WRAP++)) || true
   _logger 1 "$*"
 }
+
 info () {
   ((_LOGGER_WRAP++)) || true
   information "$*"
@@ -163,6 +234,7 @@ notification () {
   ((_LOGGER_WRAP++)) || true
   _logger 2 "$*"
 }
+
 notice () {
   ((_LOGGER_WRAP++)) || true
   notification "$*"
@@ -172,6 +244,7 @@ warning () {
   ((_LOGGER_WRAP++)) || true
   _logger 3 "$*"
 }
+
 warn () {
   ((_LOGGER_WRAP++)) || true
   warning "$*"
@@ -184,11 +257,13 @@ error () {
       [ -z "${ZSH_VERSION:-}" ] || emulate -L ksh
       local first=0
       if [ -n "$BASH_VERSION" ];then
-        local current_source=$(echo "${BASH_SOURCE[0]##*/}"|cut -d"." -f1)
+        local current_source
+        current_source=$(echo "${BASH_SOURCE[0]##*/}"|cut -d"." -f1)
         local func="${FUNCNAME[1]}"
         local i=$((${#FUNCNAME[@]}-2))
       else
-        local current_source=$(echo "${funcfiletrace[0]##*/}"|cut -d":" -f1|cut -d"." -f1)
+        local current_source
+        current_source=$(echo "${funcfiletrace[0]##*/}"|cut -d":" -f1|cut -d"." -f1)
         local func="${funcstack[1]}"
         local i=$((${#funcstack[@]}-1))
         local last_source=${funcfiletrace[$i]%:*}
@@ -251,8 +326,10 @@ error () {
   _logger 4 "$*"
   return "$LOGGER_ERROR_RETURN_CODE"
 }
+
 err () {
   ((_LOGGER_WRAP++)) || true
   error "$*"
 }
 # }}}
+# vim: filetype=sh

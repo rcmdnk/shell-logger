@@ -1,0 +1,214 @@
+######################
+### No file output ###
+######################
+=============================================================================
+Followings should be shown:
+    debug, information, info, notification, notice, warning, warn, error, err
+=============================================================================
+[Y/m/d H:M:S][./main.sh:20][DEBUG] debug
+[Y/m/d H:M:S][./main.sh:21][INFO] information
+[Y/m/d H:M:S][./main.sh:22][INFO] info
+[Y/m/d H:M:S][./main.sh:23][NOTICE] notification
+[Y/m/d H:M:S][./main.sh:24][NOTICE] notice
+[Y/m/d H:M:S][./main.sh:25][WARNING] warning
+[Y/m/d H:M:S][./main.sh:26][WARNING] warn
+[Y/m/d H:M:S][./main.sh:27][ERROR] error
+[Y/m/d H:M:S][./main.sh:28][ERROR] err
+
+=============================================================================
+Error code check: LOGGER_ERROR_RETURN_CODE=100
+=============================================================================
+error return code: 100
+
+=============================================================================
+Test special messages
+=============================================================================
+[Y/m/d H:M:S][./main.sh:40][INFO] $this message starts with a dollar
+
+=============================================================================
+No color test
+=============================================================================
+[Y/m/d H:M:S][./main.sh:47][ERROR] err: No color test
+
+
+=============================================================================
+Always color test event if the output is not a terminal
+=============================================================================
+[31m[Y/m/d H:M:S][./main.sh:55][ERROR] erro: Always color test[m
+
+=============================================================================
+LOGGER_LEVEL=2 (NOTICE), debug and info should not be shown
+=============================================================================
+[Y/m/d H:M:S][./main.sh:65][NOTICE] notice: should be shown
+[Y/m/d H:M:S][./main.sh:66][WARNING] warn: should be shown
+[Y/m/d H:M:S][./main.sh:67][ERROR] err: should be shown
+
+=============================================================================
+TRACE BACK test
+=============================================================================
+Traceback (most recent call last):
+  File "./bash.sh", line 18
+    call_main()
+  File "./bash.sh", line 12, in call_main
+    source ./main.sh
+  File "./main.sh", line 89, in ./bash.sh
+    main()
+  File "./main.sh", line 86, in main
+    wrapper()
+  File "./main.sh", line 82, in wrapper
+    make_error()
+  File "./main.sh", line 76, in make_error
+
+[Y/m/d H:M:S][./main.sh:76][ERROR] err() is called
+
+Traceback (most recent call last):
+  File "./bash.sh", line 18
+    call_main()
+  File "./bash.sh", line 12, in call_main
+    source ./main.sh
+  File "./main.sh", line 89, in ./bash.sh
+    main()
+  File "./main.sh", line 86, in main
+    wrapper()
+  File "./main.sh", line 82, in wrapper
+    make_error()
+  File "./main.sh", line 78, in make_error
+
+[Y/m/d H:M:S][./main.sh:78][ERROR] error() is called
+########################
+### Only file output ###
+########################
+=============================================================================
+Followings should be shown:
+    debug, information, info, notification, notice, warning, warn, error, err
+=============================================================================
+
+=============================================================================
+Error code check: LOGGER_ERROR_RETURN_CODE=100
+=============================================================================
+error return code: 100
+
+=============================================================================
+Test special messages
+=============================================================================
+
+=============================================================================
+No color test
+=============================================================================
+
+
+=============================================================================
+Always color test event if the output is not a terminal
+=============================================================================
+
+=============================================================================
+LOGGER_LEVEL=2 (NOTICE), debug and info should not be shown
+=============================================================================
+
+=============================================================================
+TRACE BACK test
+=============================================================================
+Traceback (most recent call last):
+  File "./bash.sh", line 25
+    call_main()
+  File "./bash.sh", line 12, in call_main
+    source ./main.sh
+  File "./main.sh", line 89, in ./bash.sh
+    main()
+  File "./main.sh", line 86, in main
+    wrapper()
+  File "./main.sh", line 82, in wrapper
+    make_error()
+  File "./main.sh", line 76, in make_error
+
+
+Traceback (most recent call last):
+  File "./bash.sh", line 25
+    call_main()
+  File "./bash.sh", line 12, in call_main
+    source ./main.sh
+  File "./main.sh", line 89, in ./bash.sh
+    main()
+  File "./main.sh", line 86, in main
+    wrapper()
+  File "./main.sh", line 82, in wrapper
+    make_error()
+  File "./main.sh", line 78, in make_error
+
+###################
+### Both output ###
+###################
+=============================================================================
+Followings should be shown:
+    debug, information, info, notification, notice, warning, warn, error, err
+=============================================================================
+[Y/m/d H:M:S][./main.sh:20][DEBUG] debug
+[Y/m/d H:M:S][./main.sh:21][INFO] information
+[Y/m/d H:M:S][./main.sh:22][INFO] info
+[Y/m/d H:M:S][./main.sh:23][NOTICE] notification
+[Y/m/d H:M:S][./main.sh:24][NOTICE] notice
+[Y/m/d H:M:S][./main.sh:25][WARNING] warning
+[Y/m/d H:M:S][./main.sh:26][WARNING] warn
+[Y/m/d H:M:S][./main.sh:27][ERROR] error
+[Y/m/d H:M:S][./main.sh:28][ERROR] err
+
+=============================================================================
+Error code check: LOGGER_ERROR_RETURN_CODE=100
+=============================================================================
+error return code: 100
+
+=============================================================================
+Test special messages
+=============================================================================
+[Y/m/d H:M:S][./main.sh:40][INFO] $this message starts with a dollar
+
+=============================================================================
+No color test
+=============================================================================
+[Y/m/d H:M:S][./main.sh:47][ERROR] err: No color test
+
+
+=============================================================================
+Always color test event if the output is not a terminal
+=============================================================================
+[31m[Y/m/d H:M:S][./main.sh:55][ERROR] erro: Always color test[m
+
+=============================================================================
+LOGGER_LEVEL=2 (NOTICE), debug and info should not be shown
+=============================================================================
+[Y/m/d H:M:S][./main.sh:65][NOTICE] notice: should be shown
+[Y/m/d H:M:S][./main.sh:66][WARNING] warn: should be shown
+[Y/m/d H:M:S][./main.sh:67][ERROR] err: should be shown
+
+=============================================================================
+TRACE BACK test
+=============================================================================
+Traceback (most recent call last):
+  File "./bash.sh", line 34
+    call_main()
+  File "./bash.sh", line 12, in call_main
+    source ./main.sh
+  File "./main.sh", line 89, in ./bash.sh
+    main()
+  File "./main.sh", line 86, in main
+    wrapper()
+  File "./main.sh", line 82, in wrapper
+    make_error()
+  File "./main.sh", line 76, in make_error
+
+[Y/m/d H:M:S][./main.sh:76][ERROR] err() is called
+
+Traceback (most recent call last):
+  File "./bash.sh", line 34
+    call_main()
+  File "./bash.sh", line 12, in call_main
+    source ./main.sh
+  File "./main.sh", line 89, in ./bash.sh
+    main()
+  File "./main.sh", line 86, in main
+    wrapper()
+  File "./main.sh", line 82, in wrapper
+    make_error()
+  File "./main.sh", line 78, in make_error
+
+[Y/m/d H:M:S][./main.sh:78][ERROR] error() is called
