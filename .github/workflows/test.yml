@@ -10,6 +10,10 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+      - name: install zsh
+        run: |
+          sudo apt-get update
+          sudo apt-get install zsh
 
       - name: pre-commit
         run: |
