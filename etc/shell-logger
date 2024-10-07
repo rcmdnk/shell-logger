@@ -7,8 +7,8 @@
 # Homepage: https://github.com/rcmdnk/shell-logger
 #
 _LOGGER_NAME="shell-logger"
-_LOGGER_VERSION="v0.3.0"
-_LOGGER_DATE="05/Oct/2024"
+_LOGGER_VERSION="v0.3.1"
+_LOGGER_DATE="07/Oct/2024"
 # }}}
 
 ## License {{{
@@ -124,7 +124,6 @@ _logger_get_level () {
 }
 
 _logger_get_file_level () {
-  echo "LOGGER_FILE_OUTPUT: $LOGGER_FILE_OUTPUT" >> hoge
   if [ "$LOGGER_FILE_OUTPUT" = "" ];then
     echo 100
   else
