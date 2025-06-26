@@ -70,7 +70,7 @@ source /usr/local/etc/shell-logger
 
 test_command
 ret=$?
-if [ ret = 0 ];then
+if [ $ret -eq 0 ];then
   info Command succeeded.
 else
   err Command failed!

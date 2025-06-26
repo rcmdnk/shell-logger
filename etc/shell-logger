@@ -7,8 +7,8 @@
 # Homepage: https://github.com/rcmdnk/shell-logger
 #
 _LOGGER_NAME="shell-logger"
-_LOGGER_VERSION="v0.3.1"
-_LOGGER_DATE="07/Oct/2024"
+_LOGGER_VERSION="v0.3.2"
+_LOGGER_DATE="26/Jun/2025"
 # }}}
 
 ## License {{{
@@ -127,7 +127,7 @@ _logger_get_file_level () {
   if [ "$LOGGER_FILE_OUTPUT" = "" ];then
     echo 100
   else
-    echo "$(_logger_get_level "$LOGGER_FILE_LEVEL")"
+    _logger_get_level "$LOGGER_FILE_LEVEL"
   fi
 }
 
@@ -135,7 +135,7 @@ _logger_get_std_level () {
   if [ "$LOGGER_FILE_ONLY" -eq 1 ];then
     echo 100
   else
-    echo "$(_logger_get_level "$LOGGER_LEVEL")"
+    _logger_get_level "$LOGGER_LEVEL"
   fi
 }
 
@@ -147,7 +147,8 @@ _logger_check_level () {
   local file_level=100
   local std_level=100
   if [ "$LOGGER_FILE_OUTPUT" != "" ];then
-    local file_level="$(_logger_get_level "$LOGGER_FILE_LEVEL")"
+    local file_level
+    file_level="$(_logger_get_level "$LOGGER_FILE_LEVEL")"
     if [ "$LOGGER_FILE_ONLY" -eq 1 ];then
       if [ "$level" -lt "$file_level" ];then
         return 1
@@ -175,17 +176,19 @@ _logger () {
   if [ $# -eq 0 ];then
     return
   fi
-  local level="$1"
+  local level
+  level="$1"
   shift
-  local file_level="$(_logger_get_file_level)"
-  local std_level="$(_logger_get_std_level)"
+  local file_level
+  file_level="$(_logger_get_file_level)"
+  local std_level
+  std_level="$(_logger_get_std_level)"
   if [ "$level" -lt "$file_level" ] && [ "$level" -lt "$std_level" ];then
     return
   fi
   local msg_prefix
   msg_prefix="$(_logger_time)$(_logger_file "$wrap")$(_logger_level "$level")"
   local msg="${msg_prefix:+$msg_prefix }$*" # add prefix with a space only if prefix not is empty
-  msg="${msg/\$/\\\$}" # escape $ is msg to be able to use eval below without trying to resolve a variable
 
   if [ "$LOGGER_FILE_OUTPUT" != "" ] && [ "$level" -ge "$file_level" ];then
     if [ "$_LOGGER_FILE_APPEND" -eq 1 ];then
@@ -200,17 +203,15 @@ _logger () {
     return
   fi
 
-  local _logger_printf=printf
   local out=1
   if [ "$level" -ge "$LOGGER_STDERR_LEVEL" ];then
     out=2
-    _logger_printf=">&2 printf"
   fi
   if [ "$LOGGER_COLOR" = "always" ] || { test "$LOGGER_COLOR" = "auto"  && test  -t $out ; };then
     [ -z "${ZSH_VERSION:-}" ] || emulate -L ksh
-    eval "$_logger_printf \"\\e[${LOGGER_COLORS[$level]}m%s\\e[m\\n\"  \"$msg\""
+    printf "\e[${LOGGER_COLORS[$level]}m%s\e[m\n" "$msg" >&"$out"
   else
-    eval "$_logger_printf \"%s\\n\" \"$msg\""
+    printf "%s\n" "$msg" >&"$out"
   fi
 }
 
@@ -249,77 +250,71 @@ warn () {
   warning "$*"
 }
 
+_logger_print_traceback () {
+  [ -z "${ZSH_VERSION:-}" ] || emulate -L ksh
+  if [ -n "$BASH_VERSION" ];then
+    local i=$((${#FUNCNAME[@]}-2))
+  else
+    local i=$((${#funcstack[@]}-1))
+    local last_source=${funcfiletrace[$i]%:*}
+    if [ "$last_source" = zsh ];then
+      ((i--))
+    fi
+  fi
+  if [ $i -ge $_LOGGER_WRAP ];then
+    echo "Traceback (most recent call last):"
+  fi
+  while [ $i -ge $_LOGGER_WRAP ];do
+    if [ -n "$BASH_VERSION" ];then
+      local file=${BASH_SOURCE[$((i+1))]}
+      local line=${BASH_LINENO[$i]}
+      local func=""
+      if [ ${BASH_LINENO[$((i+1))]} -ne 0 ];then
+        if [ "${FUNCNAME[$((i+1))]}" = "source" ];then
+          func=", in ${BASH_SOURCE[$((i+2))]}"
+        else
+          func=", in ${FUNCNAME[$((i+1))]}"
+        fi
+      fi
+      local func_call="${FUNCNAME[$i]}"
+      if [ "$func_call" = "source" ];then
+        func_call="${func_call} ${BASH_SOURCE[$i]}"
+      else
+        func_call="${func_call}()"
+      fi
+    else
+      local file=${funcfiletrace[$i]%:*}
+      local line=${funcfiletrace[$i]#*:}
+      local func=""
+      if [ -n "${funcstack[$((i+1))]}" ];then
+        if [ "${funcstack[$((i+1))]}" = "${funcfiletrace[$i]%:*}" ];then
+          func=", in ${funcfiletrace[$((i+1))]%:*}"
+        else
+          func=", in ${funcstack[$((i+1))]}"
+        fi
+      fi
+      local func_call="${funcstack[$i]}"
+      if [ "$func_call" = "${funcfiletrace[$((i-1))]%:*}" ];then
+        func_call="source ${funcfiletrace[$((i-1))]%:*}"
+      else
+        func_call="${func_call}()"
+      fi
+    fi
+    echo "  File \"${file}\", line ${line}${func}"
+    if [ $i -gt $_LOGGER_WRAP ];then
+      echo "    $func_call"
+    else
+      echo ""
+    fi
+    ((i--))
+  done
+}
+
 error () {
   ((_LOGGER_WRAP++)) || true
   if [ "$LOGGER_ERROR_TRACE" -eq 1 ];then
     {
-      [ -z "${ZSH_VERSION:-}" ] || emulate -L ksh
-      local first=0
-      if [ -n "$BASH_VERSION" ];then
-        local current_source
-        current_source=$(echo "${BASH_SOURCE[0]##*/}"|cut -d"." -f1)
-        local func="${FUNCNAME[1]}"
-        local i=$((${#FUNCNAME[@]}-2))
-      else
-        local current_source
-        current_source=$(echo "${funcfiletrace[0]##*/}"|cut -d":" -f1|cut -d"." -f1)
-        local func="${funcstack[1]}"
-        local i=$((${#funcstack[@]}-1))
-        local last_source=${funcfiletrace[$i]%:*}
-        if [ "$last_source" = zsh ];then
-          ((i--))
-        fi
-      fi
-      if [ "$current_source" = "shell-logger" ] && [ "$func" = err ];then
-        local first=1
-      fi
-      if [ $i -ge $first ];then
-        echo "Traceback (most recent call last):"
-      fi
-      while [ $i -ge $first ];do
-        if [ -n "$BASH_VERSION" ];then
-          local file=${BASH_SOURCE[$((i+1))]}
-          local line=${BASH_LINENO[$i]}
-          local func=""
-          if [ ${BASH_LINENO[$((i+1))]} -ne 0 ];then
-            if [ "${FUNCNAME[$((i+1))]}" = "source" ];then
-              func=", in ${BASH_SOURCE[$((i+2))]}"
-            else
-              func=", in ${FUNCNAME[$((i+1))]}"
-            fi
-          fi
-          local func_call="${FUNCNAME[$i]}"
-          if [ "$func_call" = "source" ];then
-            func_call="${func_call} ${BASH_SOURCE[$i]}"
-          else
-            func_call="${func_call}()"
-          fi
-        else
-          local file=${funcfiletrace[$i]%:*}
-          local line=${funcfiletrace[$i]#*:}
-          local func=""
-          if [ -n "${funcstack[$((i+1))]}" ];then
-            if [ "${funcstack[$((i+1))]}" = "${funcfiletrace[$i]%:*}" ];then
-              func=", in ${funcfiletrace[$((i+1))]%:*}"
-            else
-              func=", in ${funcstack[$((i+1))]}"
-            fi
-          fi
-          local func_call="${funcstack[$i]}"
-          if [ "$func_call" = "${funcfiletrace[$((i-1))]%:*}" ];then
-            func_call="source ${funcfiletrace[$((i-1))]%:*}"
-          else
-            func_call="${func_call}()"
-          fi
-        fi
-        echo "  File \"${file}\", line ${line}${func}"
-        if [ $i -gt $first ];then
-          echo "    $func_call"
-        else
-          echo ""
-        fi
-        ((i--))
-      done
+      _logger_print_traceback
     } 1>&2
   fi
   _logger 4 "$*"
